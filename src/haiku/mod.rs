@@ -18,7 +18,7 @@ mod tests {
 
     #[automock]
     #[async_trait]
-    trait HaikuGenerator {
+    pub trait HaikuGenerator {
         async fn generate(&self) -> Result<Haiku>;
     }
 
@@ -30,9 +30,11 @@ mod tests {
         mock_generator
             .expect_generate()
             .times(1)
-            .returning(move || Ok(Haiku {
-                content: mock_content.to_string(),
-            }).into());
+            .return_once(move || {
+                Ok(Haiku {
+                    content: mock_content.to_string(),
+                })
+            });
 
         let haiku = mock_generator.generate().await.unwrap();
         assert_eq!(haiku.content, mock_content);
