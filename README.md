@@ -1,14 +1,14 @@
-# Haiku Generator Agent
+# Agent
 
-An AI agent implementation in Rust that demonstrates the Model-Control-Protocol (MCP) pattern. This project serves as a learning exercise for building AI agents that can interact with language models and system resources.
+A Rust implementation that demonstrates the Model-Control-Protocol (MCP) pattern. This project serves as a learning exercise for building AI agents that can interact with language models and system resources.
 
 ## Project Overview
 
 The agent implements a simple but illustrative workflow:
 1. Connects to a local language model
-2. Queries the model to generate haikus
-3. Saves each haiku to the filesystem with timestamp-based filenames
-4. Implements a controlled loop with timing
+2. Processes prompts and receives responses
+3. Interacts with system resources through MCP
+4. Implements a controlled execution loop
 
 ## Core Components
 
