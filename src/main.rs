@@ -1,7 +1,8 @@
+pub mod agent;
+pub mod model_client;
+
 #[cfg(test)]
 mod tests {}
-
-pub mod haiku;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
