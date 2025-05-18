@@ -1,8 +1,8 @@
 pub mod agent;
 pub mod model_client;
 
-use cursor::{LocalOllamaClient, Agent};
-use cursor::agent::{MCPServer, MCPRequest};
+use crate::model_client::LocalOllamaClient;
+use crate::agent::{Agent, MCPServer, MCPRequest};
 use anyhow::Result;
 
 struct FilesystemMCPServer;

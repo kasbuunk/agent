@@ -60,7 +60,7 @@ impl Agent {
 mod tests {
     use super::*;
     use crate::model_client::LocalOllamaClient;
-    use tokio::time::timeout;
+    use tokio::time::{timeout, Duration};
     use std::path::PathBuf;
 
     struct TestMCPServer {
