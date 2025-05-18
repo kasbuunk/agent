@@ -147,6 +147,89 @@ async fn test_local_model_responds_to_prompt() {
 3. Commit working increments
 4. Document learnings as you go
 
+## Development Learnings
+
+### TDD Best Practices
+1. **Complete One TDD Cycle**
+   - Write a failing test
+   - Make it pass with minimal implementation
+   - Only then refactor for better design
+   - Don't start refactoring before the test passes
+
+2. **Test Implementation**
+   - Start with test-local implementations (like `ExternalMCPServer` in tests)
+   - Move to production implementations only after test passes
+   - Keep test implementations simple and focused
+
+3. **Debugging Approach**
+   - Add detailed logging at key points
+   - Test components in isolation (e.g., model responses)
+   - Use appropriate timeouts based on actual response times
+   - Verify external dependencies (model server, MCP server)
+
+### MCP Architecture Insights
+1. **Component Separation**
+   - Keep model client separate from MCP server
+   - Use clean interfaces (traits) for each component
+   - Follow adapter pattern for external services
+
+2. **Protocol Design**
+   - Use JSON-RPC for standardized communication
+   - Handle both success and error responses
+   - Include proper request/response validation
+   - Maintain clear protocol boundaries
+
+3. **Error Handling**
+   - Proper error propagation through Result types
+   - Descriptive error messages
+   - Timeout handling for external services
+   - Resource cleanup (e.g., process handling)
+
+### Model Integration
+1. **Response Handling**
+   - Extract JSON from model responses
+   - Handle thinking/XML-like tags
+   - Validate response format
+   - Use appropriate timeouts
+
+2. **Prompt Engineering**
+   - Clear system instructions
+   - Explicit format requirements
+   - No ambiguity in expected output
+   - Include validation rules
+
+### Refactoring Guidelines
+1. **When to Refactor**
+   - After tests pass
+   - When patterns emerge from implementation
+   - To reduce duplication
+   - To improve separation of concerns
+
+2. **Refactoring Steps**
+   - One change at a time
+   - Keep tests passing
+   - Document design decisions
+   - Update tests to match new structure
+
+### Common Pitfalls
+1. **Avoid Premature Abstraction**
+   - Start with concrete implementations
+   - Let patterns emerge naturally
+   - Refactor only when needed
+   - Keep it simple initially
+
+2. **Testing Gotchas**
+   - Don't mix test and production code
+   - Handle external dependencies properly
+   - Use appropriate timeouts
+   - Clean up resources
+
+3. **Development Flow**
+   - Complete TDD cycles
+   - Commit working states
+   - Document learnings
+   - Maintain clean history
+
 ## Getting Started
 
 ### Prerequisites
@@ -165,7 +248,12 @@ ollama run qwen3
 1. Ensure qwen3 is running in Ollama
 2. Run the tests: `cargo test`
 
-(To be added: setup instructions, dependencies, and configuration details)
+## Next Steps
+1. Extract MCP server into its own module
+2. Add more MCP actions beyond file operations
+3. Improve error handling and logging
+4. Add configuration management
+5. Implement proper context management
 
 ## Architecture Overview
 
