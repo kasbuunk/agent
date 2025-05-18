@@ -165,4 +165,81 @@ ollama run qwen3
 1. Ensure qwen3 is running in Ollama
 2. Run the tests: `cargo test`
 
-(To be added: setup instructions, dependencies, and configuration details) 
+(To be added: setup instructions, dependencies, and configuration details)
+
+## Architecture Overview
+
+### Current State
+- Model client capable of prompting and receiving responses
+- Basic error handling and timeouts
+- Clean separation between model and agent concerns
+
+### Proposed Next Steps
+
+#### Component Architecture
+1. **Agent**
+   - Acts as a "dumb pipe"
+   - Coordinates between model and MCP client
+   - No decision-making logic
+   - Passes model responses to appropriate MCP servers
+
+2. **Model Client** (✓ Implemented)
+   - Handles model communication
+   - Sends prompts, receives responses
+   - Error handling and timeouts
+
+3. **MCP Client** (To be implemented)
+   - Implements MCP protocol
+   - Discovers and communicates with MCP servers
+   - Handles filesystem operations through MCP server
+   - Maintains clean protocol boundaries
+
+4. **MCP Filesystem Server** (To be implemented)
+   - Implements filesystem operations
+   - Follows MCP specification
+   - Provides controlled access to file system
+
+#### Development Approach
+
+1. **Acceptance Test First**
+   ```rust
+   #[test]
+   async fn test_agent_can_write_haiku_to_file() {
+       let agent = Agent::new(
+           ModelClient::new("qwen3"),
+           MCPClient::new()
+       );
+       
+       // Agent coordinates model and filesystem interaction
+       let result = agent.run_once().await;
+       
+       // Verify haiku was written through MCP
+       assert!(result.is_ok());
+       // Verify file exists and contains haiku
+   }
+   ```
+
+2. **Guided Implementation**
+   - Start with failing acceptance test
+   - Implement MCP filesystem server first
+   - Then MCP client with filesystem capabilities
+   - Finally, agent coordination logic
+
+3. **Key Principles**
+   - Agent remains "dumb" - just coordinates
+   - Model makes decisions about tool usage
+   - Clean protocol boundaries
+   - Clear separation of concerns
+
+#### Benefits of This Approach
+1. Clear direction through acceptance test
+2. Natural emergence of components
+3. Protocol-driven development
+4. Testable boundaries
+5. Follows single responsibility principle
+
+#### Risks and Considerations
+1. Need to ensure model responses follow MCP format
+2. Protocol versioning and compatibility
+3. Error handling across boundaries
+4. Testing strategy for each component
