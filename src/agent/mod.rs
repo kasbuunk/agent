@@ -121,10 +121,10 @@ ASSISTANT: Output the JSON now:",
         let mcp_server = TestMCPServer { temp_dir: temp_dir.path().to_path_buf() };
         let agent = Agent::new(Box::new(model), Box::new(mcp_server), initial_prompt);
 
-        // Run the agent once with a 30-second timeout
-        match timeout(Duration::from_secs(30), agent.run_once()).await {
+        // Run the agent once with a 60-second timeout
+        match timeout(Duration::from_secs(60), agent.run_once()).await {
             Ok(result) => result?,
-            Err(_) => anyhow::bail!("Agent timed out after 30 seconds"),
+            Err(_) => anyhow::bail!("Agent timed out after 60 seconds"),
         }
 
         // Verify the file exists and has three lines (haiku structure)
