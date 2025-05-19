@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::model_client::ModelClient;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,8 +24,12 @@ pub struct Agent {
 }
 
 impl Agent {
-    pub fn new(model: Box<dyn ModelClient>, mcp_server: Box<dyn MCPServer>, initial_context: String) -> Self {
-        Self { 
+    pub fn new(
+        model: Box<dyn ModelClient>,
+        mcp_server: Box<dyn MCPServer>,
+        initial_context: String,
+    ) -> Self {
+        Self {
             model,
             mcp_server,
             context: initial_context,
@@ -35,7 +39,7 @@ impl Agent {
     pub async fn run_once(&self) -> Result<()> {
         // Ask model what actions to take
         let response = self.model.complete(&self.context).await?;
-        
+
         // Parse the model's JSON response to get MCP requests
         let agent_response: ModelResponse = match serde_json::from_str(&response.response) {
             Ok(response) => response,
@@ -46,12 +50,12 @@ impl Agent {
                 return Err(anyhow::anyhow!("Invalid JSON response from model"));
             }
         };
-        
+
         // Execute each MCP request through the server
         for request in agent_response.mcp_requests {
             self.mcp_server.handle_request(request)?;
         }
-        
+
         Ok(())
     }
 }
@@ -60,8 +64,8 @@ impl Agent {
 mod tests {
     use super::*;
     use crate::model_client::LocalOllamaClient;
-    use tokio::time::{timeout, Duration};
     use std::path::PathBuf;
+    use tokio::time::{timeout, Duration};
 
     struct TestMCPServer {
         temp_dir: PathBuf,
@@ -74,13 +78,13 @@ mod tests {
                     let args = request.args;
                     let path = self.temp_dir.join(args["path"].as_str().unwrap());
                     let content = args["content"].as_str().unwrap();
-                    
+
                     if let Some(parent) = path.parent() {
                         std::fs::create_dir_all(parent)?;
                     }
                     std::fs::write(path, content)?;
                     Ok(())
-                },
+                }
                 _ => anyhow::bail!("Unsupported MCP action: {}", request.action),
             }
         }
@@ -91,7 +95,7 @@ mod tests {
         // Create a temporary directory for test outputs
         let temp_dir = tempfile::tempdir()?;
         let expected_path = "haikus/2024-03-17/nature_inspired.txt";
-        
+
         // Initial prompt that specifies the task using MCP
         let initial_prompt = format!(
             "SYSTEM: You are a JSON-only response bot. You must ONLY output valid JSON, with NO explanations or thinking process.
@@ -116,9 +120,11 @@ Requirements:
 ASSISTANT: Output the JSON now:",
             expected_path
         );
-        
+
         let model = LocalOllamaClient::new("qwen3".to_string());
-        let mcp_server = TestMCPServer { temp_dir: temp_dir.path().to_path_buf() };
+        let mcp_server = TestMCPServer {
+            temp_dir: temp_dir.path().to_path_buf(),
+        };
         let agent = Agent::new(Box::new(model), Box::new(mcp_server), initial_prompt);
 
         // Run the agent once with a 60-second timeout
@@ -129,10 +135,18 @@ ASSISTANT: Output the JSON now:",
 
         // Verify the file exists and has three lines (haiku structure)
         let full_path = temp_dir.path().join(expected_path);
-        assert!(full_path.exists(), "File should exist at the specified path");
+        assert!(
+            full_path.exists(),
+            "File should exist at the specified path"
+        );
         let content = std::fs::read_to_string(full_path)?;
-        assert_eq!(content.lines().count(), 3, "File should contain exactly three lines (haiku structure)");
+        assert_eq!(
+            content.lines().count(),
+            3,
+            "File should contain exactly three lines (haiku structure)"
+        );
 
         Ok(())
     }
-} 
+}
+

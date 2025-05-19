@@ -1,9 +1,9 @@
 pub mod agent;
-pub mod model_client;
 pub mod mcp_client;
+pub mod model_client;
 
+use crate::agent::{Agent, MCPRequest, MCPServer};
 use crate::model_client::LocalOllamaClient;
-use crate::agent::{Agent, MCPServer, MCPRequest};
 use anyhow::Result;
 
 struct FilesystemMCPServer;
@@ -15,13 +15,13 @@ impl MCPServer for FilesystemMCPServer {
                 let args = request.args;
                 let path = args["path"].as_str().unwrap();
                 let content = args["content"].as_str().unwrap();
-                
+
                 if let Some(parent) = std::path::Path::new(path).parent() {
                     std::fs::create_dir_all(parent)?;
                 }
                 std::fs::write(path, content)?;
                 Ok(())
-            },
+            }
             _ => anyhow::bail!("Unsupported MCP action: {}", request.action),
         }
     }
