@@ -1,24 +1,18 @@
 [package]
 name = "agent"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-tokio = { version = "1.36", features = ["full"] }
 anyhow = "1.0"
-chrono = "0.4"
-tracing = "0.1"
-async-trait = "0.1"
+tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+ollama-rs = "0.1"
+rmcp = { version = "0.1", features = ["server", "client", "transport-child-process"] }
+async-trait = "0.1"
 reqwest = { version = "0.11", features = ["json"] }
+uuid = { version = "1.16.0", features = ["v4"] }
 
 [dev-dependencies]
-tokio-test = "0.4"
-mockall = "0.12"
-assert_matches = "1.5"
-tempfile = "3.10"
-wiremock = "0.5"
-
-[features]
-test-utils = []
+tempfile = "3.0"

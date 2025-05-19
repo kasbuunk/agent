@@ -1,6 +1,79 @@
 # Agent
 
-A Rust implementation that demonstrates the Model-Control-Protocol (MCP) pattern. This project serves as a learning exercise for building AI agents that can interact with language models and system resources.
+A Rust-based agent that uses the Model Context Protocol (MCP) to interact with local resources.
+
+## Features
+
+- Uses Ollama with qwen3 model for LLM interactions
+- Integrates with official MCP server implementation for file operations
+- Follows strict TDD principles with comprehensive test coverage
+
+## Setup
+
+1. Install dependencies:
+```bash
+cargo build
+```
+
+2. Configure the MCP server:
+   - Copy `claude_desktop_config.json` to:
+     - MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+     - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+
+3. Install Ollama and the qwen3 model:
+```bash
+ollama pull qwen3
+```
+
+## Running
+
+```bash
+cargo run
+```
+
+## Testing
+
+```bash
+cargo test
+```
+
+Note: The acceptance test has a 60-second timeout to account for model response time.
+
+## Architecture
+
+The project follows a clean architecture with the following components:
+
+- `Agent`: Core business logic that coordinates between the model and MCP server
+- `ModelClient`: Interface to the LLM (Ollama with qwen3)
+- MCP Integration: Uses official MCP server implementation for file operations
+
+## MCP Server Integration
+
+This project uses the official Model Context Protocol (MCP) server implementation for file operations. The MCP server provides a standardized way for AI models to interact with the filesystem while maintaining security and proper access controls.
+
+### Configuration
+
+The MCP server is configured in `claude_desktop_config.json`. By default, it uses the official filesystem server with access to the current directory.
+
+### Usage
+
+The agent generates MCP requests in the following format:
+
+```json
+{
+    "mcp_requests": [
+        {
+            "action": "write_file",
+            "args": {
+                "path": "path/to/file",
+                "content": "file content"
+            }
+        }
+    ]
+}
+```
+
+These requests are handled by the official MCP server, which provides proper security and access controls.
 
 ## Project Overview
 

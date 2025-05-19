@@ -1,5 +1,6 @@
 pub mod agent;
 pub mod model_client;
+pub mod mcp_client;
 
 use crate::model_client::LocalOllamaClient;
 use crate::agent::{Agent, MCPServer, MCPRequest};
