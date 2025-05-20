@@ -11,7 +11,7 @@ async fn main() -> anyhow::Result<()> {
     let mut mcp_client = MCPClient::new();
     mcp_client.init().await?;
 
-    let file_prefix = "./haiku-";
+    let file_prefix = "./haiku/haiku-";
     let initial_prompt = format!(
             "SYSTEM: You are an agent with MCP capabilities. You have access to the filesystem write_file call, where the method is 'tools/call'. You must ONLY output valid JSON, with NO explanations or thinking process.
 HUMAN: Generate a haiku about nature and return it as the contents of a file prefixed with {}, in the current directory, with a correct unique random uuid after the prefix and ending in a .txt extension, with the write_file command for the filesystem MCP server in the JSON-RPC format. For example:
