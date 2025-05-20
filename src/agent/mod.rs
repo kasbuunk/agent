@@ -1,6 +1,7 @@
 use crate::mcp_client::MCPClient;
 use crate::model_client::ModelClient;
 use anyhow::Result;
+use rmcp::model;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,25 +55,19 @@ impl Agent {
         let model_response = self.model.complete(&self.context).await?;
 
         // Parse the model's JSON response to get MCP requests
-        let mcp_request: MCPRequest = match serde_json::from_str(&model_response.response) {
-            Ok(response) => response,
-            Err(e) => {
-                // Log the invalid response for debugging
-                eprintln!("Failed to parse model response: {}", e);
-                eprintln!("Raw response: {}", model_response.response);
-                return Err(anyhow::anyhow!("Invalid JSON response from model"));
-            }
-        };
+        let mcp_request: model::JsonRpcRequest =
+            match serde_json::from_str(&model_response.response) {
+                Ok(response) => response,
+                Err(e) => {
+                    // Log the invalid response for debugging
+                    eprintln!("Failed to parse model response: {}", e);
+                    eprintln!("Raw response: {}", model_response.response);
+                    return Err(anyhow::anyhow!("Invalid JSON response from model"));
+                }
+            };
 
         // Execute each MCP request through the server
-        if mcp_request.params.name == "write_file" {
-            self.mcp_client
-                .write_file(
-                    &mcp_request.params.arguments.path,
-                    &mcp_request.params.arguments.content,
-                )
-                .await?;
-        }
+        self.mcp_client.do_request(mcp_request).await?;
 
         Ok(())
     }
