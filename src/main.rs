@@ -2,14 +2,12 @@ pub mod agent;
 pub mod mcp_client;
 pub mod model_client;
 
-use crate::agent::Agent;
-use crate::model_client::LocalOllamaClient;
 use mcp_client::MCPClient;
 use serde_json::json;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let model = LocalOllamaClient::new("qwen3".to_string());
+    let model = model_client::LocalOllamaClient::new("qwen3".to_string());
     let mut mcp_client = MCPClient::new();
     mcp_client.init().await?;
 
@@ -41,7 +39,7 @@ ASSISTANT: Output the JSON now:",
             "id": 1
         }),
         );
-    let mut agent = Agent::new(Box::new(model), mcp_client, initial_prompt);
+    let mut agent = agent::Agent::new(Box::new(model), mcp_client, initial_prompt);
 
     loop {
         match agent.run_once().await {

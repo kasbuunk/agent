@@ -2,34 +2,6 @@ use crate::mcp_client::MCPClient;
 use crate::model_client::ModelClient;
 use anyhow::Result;
 use rmcp::model;
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Params {
-    pub name: String,
-    pub arguments: Arguments,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Arguments {
-    pub path: String,
-    pub content: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MCPRequest {
-    pub method: String,
-    pub params: Params,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ModelResponse {
-    pub mcp_requests: Vec<MCPRequest>,
-}
-
-pub trait MCPServer {
-    fn handle_request(&self, request: MCPRequest) -> Result<()>;
-}
 
 pub struct Agent {
     model: Box<dyn ModelClient>,
