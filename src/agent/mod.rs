@@ -51,25 +51,25 @@ impl Agent {
 
     pub async fn run_once(&mut self) -> Result<()> {
         // Ask model what actions to take
-        let response = self.model.complete(&self.context).await?;
+        let model_response = self.model.complete(&self.context).await?;
 
         // Parse the model's JSON response to get MCP requests
-        let agent_response: MCPRequest = match serde_json::from_str(&response.response) {
+        let mcp_request: MCPRequest = match serde_json::from_str(&model_response.response) {
             Ok(response) => response,
             Err(e) => {
                 // Log the invalid response for debugging
                 eprintln!("Failed to parse model response: {}", e);
-                eprintln!("Raw response: {}", response.response);
+                eprintln!("Raw response: {}", model_response.response);
                 return Err(anyhow::anyhow!("Invalid JSON response from model"));
             }
         };
 
         // Execute each MCP request through the server
-        if agent_response.params.name == "write_file" {
+        if mcp_request.params.name == "write_file" {
             self.mcp_client
                 .write_file(
-                    &agent_response.params.arguments.path,
-                    &agent_response.params.arguments.content,
+                    &mcp_request.params.arguments.path,
+                    &mcp_request.params.arguments.content,
                 )
                 .await?;
         }
