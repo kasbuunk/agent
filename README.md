@@ -1,12 +1,13 @@
-# Agent
+# The Silicon Reptile Brain: Engineering an AI Agent
 
-A Rust-based agent that uses the Model Context Protocol (MCP) to interact with local resources.
+A Rust-based agent that uses JSON-RPC to interact with local resources through a filesystem service, demonstrating the principles of Model Context Protocol (MCP).
 
 ## Features
 
 - Uses Ollama with qwen3 model for LLM interactions
-- Integrates with official MCP server implementation for file operations
+- Implements JSON-RPC based file operations
 - Follows strict TDD principles with comprehensive test coverage
+- Demonstrates core MCP principles through practical implementation
 
 ## Setup
 
@@ -15,12 +16,7 @@ A Rust-based agent that uses the Model Context Protocol (MCP) to interact with l
 cargo build
 ```
 
-2. Configure the MCP server:
-   - Copy `claude_desktop_config.json` to:
-     - MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-     - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
-3. Install Ollama and the qwen3 model:
+2. Install Ollama and the qwen3 model:
 ```bash
 ollama pull qwen3
 ```
@@ -43,135 +39,58 @@ Note: The acceptance test has a 60-second timeout to account for model response 
 
 The project follows a clean architecture with the following components:
 
-- `Agent`: Core business logic that coordinates between the model and MCP server
+- `Agent`: Core business logic that coordinates between the model and filesystem operations
 - `ModelClient`: Interface to the LLM (Ollama with qwen3)
-- MCP Integration: Uses official MCP server implementation for file operations
+- `MCPClient`: Handles JSON-RPC based file operations
 
-## MCP Server Integration
+## File Operations
 
-This project uses the official Model Context Protocol (MCP) server implementation for file operations. The MCP server provides a standardized way for AI models to interact with the filesystem while maintaining security and proper access controls.
-
-### Configuration
-
-The MCP server is configured in `claude_desktop_config.json`. By default, it uses the official filesystem server with access to the current directory.
+This project uses JSON-RPC for file operations. The agent communicates with a filesystem service using standardized JSON-RPC requests.
 
 ### Usage
 
-The agent generates MCP requests in the following format:
+The agent generates JSON-RPC requests in the following format:
 
 ```json
 {
-    "mcp_requests": [
-        {
-            "action": "write_file",
-            "args": {
-                "path": "path/to/file",
-                "content": "file content"
-            }
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+        "name": "write_file",
+        "arguments": {
+            "path": "path/to/file",
+            "content": "file content"
         }
-    ]
+    },
+    "id": 1
 }
 ```
-
-These requests are handled by the official MCP server, which provides proper security and access controls.
 
 ## Project Overview
 
 The agent implements a simple but illustrative workflow:
-1. Connects to a local language model
+1. Connects to a local language model (Ollama with qwen3)
 2. Processes prompts and receives responses
-3. Interacts with system resources through MCP
-4. Implements a controlled execution loop
+3. Interacts with the filesystem through JSON-RPC calls
+4. Implements a controlled execution loop for continuous operation
 
 ## Core Components
 
-### MCP Implementation
-- **Client**: Implements the MCP client protocol
-- **Model Interface**: Connects to a local language model
-- **Tool Usage**: Demonstrates filesystem operations through MCP server
+### Implementation
+- **MCPClient**: Implements JSON-RPC client for file operations
+- **ModelClient**: Connects to Ollama for LLM capabilities
+- **Agent**: Coordinates between model and file operations
 
 ### Main Features
 - Continuous haiku generation loop
-- Filesystem interaction for saving outputs
+- Filesystem interaction through JSON-RPC
 - Controlled timing with sleep intervals
 - Structured prompt engineering
-- Timestamp-based file management
+- UUID-based file management
 
 ### Technical Requirements
 - Rust
-- Local language model setup (to be configured)
-- MCP server implementation (to be configured)
-
-## Agent State and Memory Considerations
-
-The agent maintains state through its context, which represents the ongoing "memory" of the agent. This is a crucial design consideration with several important aspects:
-
-### Context Evolution
-- The context is not just a static mission or prompt
-- It evolves over time as the agent:
-  - Interacts with the model
-  - Receives feedback from humans
-  - Makes progress on tasks
-  - Interacts with other agents
-
-### Types of Context
-1. **Conversation History**
-   - Full history of interactions
-   - May need compression/summarization for token limits
-   - Critical for maintaining coherent dialogue
-
-2. **Task State**
-   - Current progress on objectives
-   - Pending items (like a backlog)
-   - Completed actions and their outcomes
-
-3. **Environmental Knowledge**
-   - Understanding of available tools
-   - Access permissions and constraints
-   - System state and resources
-
-### Future Considerations
-- Implementing more sophisticated context management
-- Adding context compression strategies
-- Supporting multi-agent context sharing
-- Developing context persistence mechanisms
-- Adding human feedback integration
-
-## Project Goals
-
-1. **Learning Objectives**
-   - Understand MCP client implementation
-   - Practice AI agent development in Rust
-   - Learn model interaction patterns
-   - Implement tool usage through MCP
-
-2. **Technical Implementation**
-   - Clean architecture following Rust best practices
-   - Error handling and logging
-   - Configuration management
-   - Proper resource cleanup
-
-## Development Plan
-
-### Phase 1: Basic Structure
-- Set up project structure
-- Implement basic MCP client structure
-- Create model interaction interface
-
-### Phase 2: Core Functionality
-- Implement haiku generation loop
-- Add filesystem operations
-- Integrate timing controls
-
-### Phase 3: Model Integration
-- Configure local model connection
-- Implement prompt engineering
-- Add error handling
-
-### Phase 4: Polish
-- Add logging and monitoring
-- Implement graceful shutdown
-- Add configuration options
+- Ollama with qwen3 model
 
 ## Development Philosophy
 
@@ -186,7 +105,7 @@ We follow a strict TDD approach with these principles:
 - Start with the simplest possible interface
 - Let complexity emerge from real requirements
 - Don't make assumptions about implementation details too early
-- Keep dependencies (like HTTP, filesystem) behind clean interfaces
+- Keep dependencies behind clean interfaces
 
 ### Example: Model Client Development
 Here's how we developed the model client:
@@ -194,25 +113,6 @@ Here's how we developed the model client:
 2. Wrote a test against a real model (no mocks initially)
 3. Made no assumptions about transport/protocol until needed
 4. Added complexity (like error handling) only when required
-
-Bad:
-```rust
-// Too specific, assumes too much
-async fn test_model_formats_json_and_uses_http() {
-    assert_eq!(response.format, "specific_format");
-    assert_eq!(response.metadata.timestamp, "2024-03-17");
-}
-```
-
-Good:
-```rust
-// Tests core behavior only
-async fn test_local_model_responds_to_prompt() {
-    let client = LocalOllamaClient::new("qwen3".to_string());
-    let response = client.complete("Say hello").await.unwrap();
-    assert!(!response.response.is_empty());
-}
-```
 
 ### Incremental Development
 1. Start with real, working examples
@@ -328,6 +228,26 @@ ollama run qwen3
 4. Add configuration management
 5. Implement proper context management
 
+## Project Insights and Learnings
+
+To comprehend what an AI agent is, how it works, and what it needs to interact with the world, I built this agent program in Rust. I learned extensively about the Model Context Protocol, which enables an LLM to have an effect on the world.
+
+### Key Discoveries
+
+As a simple but profound demonstration, I created a test where the agent prompts an LLM to write a haiku to the file system. The elegance lies in having no haiku-specific code—the intelligence resides entirely in the prompt. While I hardcoded the filesystem MCP server in the initialization, this approach could easily be extracted to configuration files or made dynamic.
+
+The agent is not complete, but it has taught me enough about agent architecture to know when to stop pursuing perfection. Having built this foundation, I now understand what to look for in off-the-shelf agents.
+
+### Conceptual Framework
+
+Before implementation, I developed this analogy between agents and the human body:
+- **Agent**: reptile brain (controller)
+- **LLM**: neocortex (reasoning)
+- **MCP Client**: nervous system (communication)
+- **MCP Servers**: muscles (tools) and sensors (resources)
+
+The agent module functions as a controller with access to both the model and MCP client. It currently initiates the MCP server (though ideally this would reside elsewhere), forwards prompts to the LLM, and processes tool calls into MCP requests.
+
 ## Architecture Overview
 
 ### Current State
@@ -404,3 +324,8 @@ ollama run qwen3
 2. Protocol versioning and compatibility
 3. Error handling across boundaries
 4. Testing strategy for each component
+
+## Future Directions
+
+- Design communication channels for agent-to-agent interaction, including inbox/outbox systems that allow for human intervention and input
+- Explore existing agent implementations to strengthen intuition and practical understanding through hands-on application
